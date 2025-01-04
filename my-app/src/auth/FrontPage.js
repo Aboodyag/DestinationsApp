@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Login from './Login';
 import Register from './Register';
+import './FrontPage.css';
 
 const FrontPage = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -64,10 +65,12 @@ const FrontPage = () => {
             <h1>Welcome to the destination Application</h1>
             <p>Register or log in to access your personalized dashboard, or explore destinations below.</p>
             <div>
-                <button onClick={() => setIsLogin(true)} style={{ marginRight: '10px' }}>
+                <button onClick={() => setIsLogin(true)} style={{ marginRight: '10px', color: 'blue'}}>
                     Login
                 </button>
-                <button onClick={() => setIsLogin(false)}>Register</button>
+                <button onClick={() => setIsLogin(false)} style={{color: 'blue'}}>
+                    Register
+                    </button>
             </div>
             <div style={{ marginTop: '20px' }}>
                 {isLogin ? (
@@ -78,37 +81,37 @@ const FrontPage = () => {
             </div>
 
             {/* Search Section */}
-            <div style={{ marginTop: '40px' }}>
-                <h2>Search Destinations</h2>
-                <SearchForm onSearch={handleSearch} />
-                <div>
-                    {searchResults.map((result, index) => (
-                        <div key={index}>
-                            <h3>{result.destination}, {result.country}</h3>
-                            <button onClick={() => window.open(`https://duckduckgo.com/?q=${result.destination}`, '_blank')}>
-                                Search on DuckDuckGo
-                            </button>
-                            <p>{JSON.stringify(result)}</p>
-                        </div>
-                    ))}
+            <div>
+        <h2>Search Destinations</h2>
+        <SearchForm onSearch={handleSearch} />
+        <div className="search-results">
+            {searchResults.map((result, index) => (
+                <div className="search-result-card" key={index}>
+                    <h3>{result.Destination}, {result.Country}</h3>
+                    <p><strong>Region:</strong> {result.Region}</p>
+                    <p><strong>Description:</strong> {result.Description}</p>
+                    <button onClick={() => window.open(`https://duckduckgo.com/?q=${result.Destination}`, '_blank')}>
+                        Search on DuckDuckGo
+                    </button>
                 </div>
-            </div>
+            ))}
+        </div>
+    </div>
 
-            {/* Public Lists Section */}
-            <div style={{ marginTop: '40px' }}>
-                <h2>Public Destination Lists</h2>
-                {publicLists.map((list, index) => (
-                    <div key={index}>
-                        <h3>{list.name} (by {list.creatorNickname})</h3>
-                        <p>Destinations: {list.destinations.length}</p>
-                        <p>Average Rating: {list.averageRating}</p>
-                        <p>Last Modified: {new Date(list.lastModified).toLocaleDateString()}</p>
-                        <button onClick={() => alert(JSON.stringify(list))}>
-                            View List Details
-                        </button>
-                    </div>
-                ))}
+    {/* Public Lists Section */}
+    <div className="public-lists">
+        {publicLists.map((list, index) => (
+            <div className="public-list-card" key={index}>
+                <h3>{list.name}</h3>
+                <p><strong>Created by:</strong> {list.creatorNickname}</p>
+                <p><strong>Destinations:</strong> {list.destinations.length}</p>
+                <p><strong>Average Rating:</strong> {list.averageRating}</p>
+                <button onClick={() => alert(JSON.stringify(list))}>
+                    View List Details
+                </button>
             </div>
+        ))}
+    </div>
         </div>
     );
 };
