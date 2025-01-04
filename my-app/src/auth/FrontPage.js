@@ -9,12 +9,17 @@ const FrontPage = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [publicLists, setPublicLists] = useState([]);
 
+    const [expandedDetails, setExpandedDetails] = useState({}); // Tracks which destination details are expanded
+
+
     const handleLoginSuccess = (token, isAdmin) => {
         setUser({ token, isAdmin });
     };
 
     const handleSearch = async (filters) => {
         try {
+
+            
             // Trim and validate filters to avoid unnecessary or empty parameters
             const trimmedFilters = {};
             for (const key in filters) {
@@ -47,6 +52,14 @@ const FrontPage = () => {
             console.error("Error during search:", error);
             setSearchResults([]); // Reset search results on error
         }
+    };
+
+
+    const toggleDetails = (id) => {
+        setExpandedDetails((prev) => ({
+            ...prev,
+            [id]: !prev[id], // Toggle visibility for the specific destination
+        }));
     };
 
 
@@ -86,13 +99,41 @@ const FrontPage = () => {
         <SearchForm onSearch={handleSearch} />
         <div className="search-results">
             {searchResults.map((result, index) => (
-                <div className="search-result-card" key={index}>
-                    <h3>{result.Destination}, {result.Country}</h3>
-                    <p><strong>Region:</strong> {result.Region}</p>
-                    <p><strong>Description:</strong> {result.Description}</p>
-                    <button onClick={() => window.open(`https://duckduckgo.com/?q=${result.Destination}`, '_blank')}>
-                        Search on DuckDuckGo
-                    </button>
+                <div className="search-results">
+                    {searchResults.map((result) => (
+                        <div className="search-result-card" key={result._id}>
+                            <h3>{result.Destination}, {result.Country}</h3>
+                            <p><strong>Region:</strong> {result.Region}</p>
+                            {expandedDetails[result._id] ? (
+                                <>
+                                    <p><strong>Category:</strong> {result.Category}</p>
+                                    <p><strong>Latitude:</strong> {result.Latitude}</p>
+                                    <p><strong>Longitude:</strong> {result.Longitude}</p>
+                                    <p><strong>Annual Tourists:</strong> {result['Approximate Annual Tourists']}</p>
+                                    <p><strong>Currency:</strong> {result.Currency}</p>
+                                    <p><strong>Religion:</strong> {result['Majority Religion']}</p>
+                                    <p><strong>Famous Foods:</strong> {result['Famous Foods']}</p>
+                                    <p><strong>Language:</strong> {result.Language}</p>
+                                    <p><strong>Best Time to Visit:</strong> {result['Best Time to Visit']}</p>
+                                    <p><strong>Cost of Living:</strong> {result['Cost of Living']}</p>
+                                    <p><strong>Safety:</strong> {result.Safety}</p>
+                                    <p><strong>Cultural Significance:</strong> {result['Cultural Significance']}</p>
+                                    <p><strong>Description:</strong> {result.Description}</p>
+                                </>
+                            ) : null}
+                            <button onClick={() => toggleDetails(result._id)}>
+                                {expandedDetails[result._id] ? "View Less" : "View More"}
+                            </button>
+                            <button
+                                onClick={() =>
+                                    window.open(`https://duckduckgo.com/?q=${result.Destination}`, '_blank')
+                                }
+                                className="duckduckgo-button"
+                            >
+                                Search on DuckDuckGo
+                            </button>
+                        </div>
+                    ))}
                 </div>
             ))}
         </div>
