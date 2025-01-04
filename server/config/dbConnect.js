@@ -1,16 +1,16 @@
-const mongoose = require('mongoose');
+const { MongoClient } = require('mongodb');
 
-const dbConnect = async () => {
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://test:test@myapp.vvmry.mongodb.net/?retryWrites=true&w=majority&appName=Myapp";
+const client = new MongoClient(MONGO_URI);
 
-    try{
-  const connect = await mongoose.connect(process.env.CONNECTION_STRING)
-    console.log(
-        `Database connected: ${connect.connection.host}, ${connect.connection.name}`
-    )
-} catch (error) {
-    console.log('Database connection failed')
-    console.log(error)
-    process.exit(1)
+async function dbConnect() {
+    try {
+        await client.connect();
+        console.log("Connected to MongoDB");
+    } catch (error) {
+        console.error("Failed to connect to MongoDB:", error);
+        process.exit(1);
+    }
 }
-}
-module.exports = dbConnect;
+
+module.exports = { dbConnect, client };
