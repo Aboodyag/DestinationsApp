@@ -27,6 +27,14 @@ const FrontPage = () => {
                     trimmedFilters[key] = filters[key].trim();
                 }
             }
+
+
+        // If all inputs are empty return early and do not perform a fetch
+        if (Object.keys(trimmedFilters).length === 0) {
+            console.log("No valid filters provided. Search aborted.");
+            setSearchResults([]); // Clear previous results
+            return;
+        }
     
             // Create query parameters from the filters
             const queryParams = new URLSearchParams(trimmedFilters).toString();

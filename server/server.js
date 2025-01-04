@@ -46,10 +46,22 @@ const destinationCollection = client.db('Destinations').collection('destinations
 
 app.get("/api/destination/search", async (req, res) => {
     try {
+        const normalizeString = (str) =>
+            str.trim().toLowerCase().replace(/\s+/g, ""); // Normalize input (trim, lowercase, remove extra spaces)
+
         const query = {};
-        if (req.query.Name) query.Destination = { $regex: `^${req.query.Name}`, $options: "i" };
-        if (req.query.Region) query.Region = { $regex: `^${req.query.Region}`, $options: "i" };
-        if (req.query.Country) query.Country = { $regex: `^${req.query.Country}`, $options: "i" };
+        if (req.query.Name) {
+            const normalizedName = normalizeString(req.query.Name);
+            query.Destination = { $regex: new RegExp(normalizedName, "i") }; // Soft-match with regex
+        }
+        if (req.query.Region) {
+            const normalizedRegion = normalizeString(req.query.Region);
+            query.Region = { $regex: new RegExp(normalizedRegion, "i") }; // Soft-match with regex
+        }
+        if (req.query.Country) {
+            const normalizedCountry = normalizeString(req.query.Country);
+            query.Country = { $regex: new RegExp(normalizedCountry, "i") }; // Soft-match with regex
+        }
 
         const destinations = await destinationCollection.find(query).toArray();
         res.json(destinations);
