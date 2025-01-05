@@ -29,6 +29,7 @@ const Login = ({ onLoginSuccess }) => {
                     throw new Error(data.message || 'Login failed');
                 }
             }
+            setMessage('Login successful!');
                 
             // Save the token and admin status in localStorage
             localStorage.setItem('token', data.token);
