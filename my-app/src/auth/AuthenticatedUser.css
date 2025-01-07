@@ -81,6 +81,14 @@ header button {
     gap: 8px;
     justify-content: center;
 }
+.search-section form h2 {
+   
+    background-color: white;
+    display: center;
+    
+    gap: 8px;
+    justify-content: center;
+}
 
 .search-form input {
     padding: 8px;
