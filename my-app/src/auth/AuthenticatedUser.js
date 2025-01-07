@@ -81,6 +81,9 @@ const AuthenticatedUser = ({ isAdmin }) => {
     const fetchPrivateLists = async () => {
         try {
             const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('No token found. Please log in.');
+            }
             const response = await fetch('/api/auth/private-lists', {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -125,13 +128,22 @@ const AuthenticatedUser = ({ isAdmin }) => {
 
     return (
         <div className="authenticated-user">
-            <header>
-                <h1>Welcome, {userType}</h1>
-                <button onClick={handleLogout}>Logout</button>
-            </header>
+        <header>
+            <h1>Welcome, {userType}</h1>
+            <button onClick={handleLogout}>Logout</button>
+        </header>
+
+        {isAdmin && (
+            <section className="admin-panel">
+                <h2>Admin Panel</h2>
+                <p>Welcome to the Admin Panel. Here you can manage users and their lists.</p>
+                {/* ** Add admin panel functionality here */}
+                
+            </section>
+        )}
 
             {/* Search Section */}
-            <div>
+            <div class = "search-section">
                 <h2>Search Destinations</h2>
                 <SearchForm onSearch={handleSearch} />
                 <div className="search-results">
