@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-//import './AuthenticatedUser.css';
+import './AuthenticatedUser.css';
 
 const AuthenticatedUser = ({ isAdmin }) => {
     const [userType, setUserType] = useState(isAdmin ? 'Admin' : 'User');
