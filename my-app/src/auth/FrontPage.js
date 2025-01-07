@@ -13,6 +13,8 @@ const FrontPage = () => {
 
     const handleLoginSuccess = (token, isAdmin) => {
         setUser({ token, isAdmin });
+        window.location.href = '/'; // Redirect to login
+
     };
 
     const handleSearch = async (filters) => {

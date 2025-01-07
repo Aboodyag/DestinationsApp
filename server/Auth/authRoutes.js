@@ -1,7 +1,7 @@
 const express = require('express');
 const { register, login } = require('./authControllers');
 const router = express.Router();
-const authenticateToken = require('./verifyToken');
+const authToken = require('./verifyToken');
 const List = require('../Schemas/list');
 const Review = require('../Schemas/review');
 
@@ -24,7 +24,7 @@ router.get('/public-lists', async (req, res) => {
 });
 
 // Fetch private lists for authenticated users
-router.get('/private-lists', authenticateToken, async (req, res) => {
+router.get('/private-lists', authToken, async (req, res) => {
     try {
         const privateLists = await List.find({ listOwner: req.user.id, isPublic: false })
             .sort({ lastModified: -1 });
@@ -36,7 +36,7 @@ router.get('/private-lists', authenticateToken, async (req, res) => {
 });
 
 // Fetch user-specific lists
-router.get('/lists', authenticateToken, async (req, res) => {
+router.get('/lists', authToken, async (req, res) => {
     try {
         const userLists = await List.find({ listOwner: req.user.id });
         res.status(200).json(userLists);
@@ -47,7 +47,7 @@ router.get('/lists', authenticateToken, async (req, res) => {
 });
 
 // Create a new list
-router.post('/create-list', authenticateToken, async (req, res) => {
+router.post('/create-list', authToken, async (req, res) => {
     try {
         const { name, description, destinations, isPublic } = req.body;
         if (!name || !destinations || destinations.length === 0) {
@@ -69,7 +69,7 @@ router.post('/create-list', authenticateToken, async (req, res) => {
 });
 
 // Edit an existing list
-router.put('/edit-list/:id', authenticateToken, async (req, res) => {
+router.put('/edit-list/:id', authToken, async (req, res) => {
     try {
         const { name, description, destinations, isPublic } = req.body;
         const list = await List.findById(req.params.id);
@@ -92,7 +92,7 @@ router.put('/edit-list/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete a list
-router.delete('/delete-list/:id', authenticateToken, async (req, res) => {
+router.delete('/delete-list/:id', authToken, async (req, res) => {
     try {
         const list = await List.findById(req.params.id);
 
@@ -109,7 +109,7 @@ router.delete('/delete-list/:id', authenticateToken, async (req, res) => {
 });
 
 // Add a review to a public list
-router.post('/add-review/:listId', authenticateToken, async (req, res) => {
+router.post('/add-review/:listId', authToken, async (req, res) => {
     try {
         const { rating, comment } = req.body;
 
