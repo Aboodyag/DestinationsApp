@@ -10,6 +10,11 @@ const AuthenticatedUser = ({ isAdmin }) => {
     const [expandedLists, setExpandedLists] = useState({});
     const [lists, setLists] = useState([]);
     const [newList, setNewList] = useState({ name: '', description: '', destinations: [], isPublic: false });
+    const [adminMessage, setAdminMessage] = useState(''); // ** Display admin panel messages
+    const [userId, setUserId] = useState(''); // ** Manage user actions in admin panel
+    const [users, setUsers] = useState([]); // ** List of users for dropdown
+    const [selectedUser, setSelectedUser] = useState(''); // ** Selected user from dropdown
+    const [reviewId, setReviewId] = useState(''); // ** Manage reviews in admin panel
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -121,6 +126,78 @@ const AuthenticatedUser = ({ isAdmin }) => {
         }
     };
 
+    const fetchUsers = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/admin/users', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to fetch users: ${response.statusText}`);
+            }
+            const data = await response.json();
+            console.log('Fetched users:', data); // Debugging log
+            setUsers(data);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        }
+    };
+
+    const grantManager = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/admin/grant-manager/${selectedUser}`, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = await response.json();
+            setAdminMessage(data.message || 'Operation successful');
+        } catch (error) {
+            setAdminMessage('Failed to grant manager privileges.');
+        }
+    };
+
+    const toggleReviewVisibility = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/admin/review/${reviewId}/toggle-hidden`, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = await response.json();
+            setAdminMessage(data.message || 'Operation successful');
+        } catch (error) {
+            setAdminMessage('Failed to toggle review visibility.');
+        }
+    };
+
+    const toggleUserStatus = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/admin/user/${selectedUser}/toggle-disabled`, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = await response.json();
+            setAdminMessage(data.message || 'Operation successful');
+        } catch (error) {
+            setAdminMessage('Failed to toggle user status.');
+        }
+    };
+
+    useEffect(() => {
+        if (isAdmin) fetchUsers();
+    }, [isAdmin]);
+
+
     useEffect(() => {
         fetchPublicLists();
         fetchPrivateLists();
@@ -128,19 +205,60 @@ const AuthenticatedUser = ({ isAdmin }) => {
 
     return (
         <div className="authenticated-user">
-        <header>
-            <h1>Welcome, {userType}</h1>
-            <button onClick={handleLogout}>Logout</button>
-        </header>
+            <header>
+                <h1>Welcome, {userType}</h1>
+                <button onClick={handleLogout}>Logout</button>
+            </header>
 
-        {isAdmin && (
-            <section className="admin-panel">
-                <h2>Admin Panel</h2>
-                <p>Welcome to the Admin Panel. Here you can manage users and their lists.</p>
-                {/* ** Add admin panel functionality here */}
-                
-            </section>
-        )}
+            {isAdmin && (
+                <section className="admin-panel">
+                    <h2>Admin Panel</h2>
+                    <div>
+                        <h3>Grant Manager Privileges</h3>
+                        <select
+                            value={selectedUser}
+                            onChange={(e) => setSelectedUser(e.target.value)}
+                        >
+                            <option value="">Select User</option>
+                            {users.map((user) => (
+                                <option key={user._id} value={user._id}>
+                                    {user.name || user.email}
+                                </option>
+                            ))}
+                        </select>
+                        <button onClick={grantManager}>Grant Privileges</button>
+                    </div>
+
+                    <div>
+                        <h3>Toggle Review Visibility</h3>
+                        <input
+                            type="text"
+                            placeholder="Review ID"
+                            value={reviewId}
+                            onChange={(e) => setReviewId(e.target.value)}
+                        />
+                        <button onClick={toggleReviewVisibility}>Toggle Visibility</button>
+                    </div>
+
+                    <div>
+                        <h3>Toggle User Status</h3>
+                        <select
+                            value={selectedUser}
+                            onChange={(e) => setSelectedUser(e.target.value)}
+                        >
+                            <option value="">Select User</option>
+                            {users.map((user) => (
+                                <option key={user._id} value={user._id}>
+                                    {user.name || user.email}
+                                </option>
+                            ))}
+                        </select>
+                        <button onClick={toggleUserStatus}>Toggle Status</button>
+                    </div>
+                    {adminMessage && <p>{adminMessage}</p>}
+                </section>
+            )}
+
 
             {/* Search Section */}
             <div class = "search-section">
