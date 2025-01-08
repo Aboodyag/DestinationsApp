@@ -129,6 +129,9 @@ const AuthenticatedUser = ({ isAdmin }) => {
     const fetchUsers = async () => {
         try {
             const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('No token found. Please log in.');
+            }
             const response = await fetch('/api/admin/users', {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -138,12 +141,12 @@ const AuthenticatedUser = ({ isAdmin }) => {
                 throw new Error(`Failed to fetch users: ${response.statusText}`);
             }
             const data = await response.json();
-            console.log('Fetched users:', data); // Debugging log
             setUsers(data);
         } catch (error) {
             console.error('Error fetching users:', error);
         }
     };
+    
 
     const grantManager = async () => {
         try {

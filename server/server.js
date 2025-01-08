@@ -17,6 +17,9 @@ app.use(cors());
 const authRoute = require('./Auth/authRoutes');
 app.use('/api/auth', authRoute);
 
+const adminRoute = require('./Auth/adminRoutes');
+app.use('/api/admin', adminRoute);
+
 // const listRoute = require('./Auth/listRoutes'); 
 // app.use('/api/list', listRoute);
 //----------------------this crashes the server---------------------

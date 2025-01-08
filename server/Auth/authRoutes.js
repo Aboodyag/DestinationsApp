@@ -7,22 +7,7 @@ const Review = require('../Schemas/review');
 const Users = require('../Schemas/user');
 
 
-router.get('/users', authToken, async (req, res) => {
-    try {
-        // Check if the requester is an admin
-        if (!req.user.isAdmin) {
-            return res.status(403).json({ message: 'Access denied. Admins only.' });
-        }
 
-        // Fetch all users excluding admins (if needed)
-        const users = await Users.find({}, 'name email isAdmin').lean(); // Adding `lean()` for performance
-
-        res.status(200).json(users);
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        res.status(500).json({ message: 'Failed to fetch users' });
-    }
-});
 
 // Routes
 router.post('/register', register); // Calls the register function
