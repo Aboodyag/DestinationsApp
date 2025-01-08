@@ -1,7 +1,7 @@
 const express = require('express');
 const { register, login } = require('./authControllers');
 const router = express.Router();
-const authToken = require('./verifyToken');
+const authToken = require('./verifyToken.js');
 const List = require('../Schemas/list');
 const Review = require('../Schemas/review');
 const Users = require('../Schemas/user');
@@ -31,14 +31,22 @@ router.get('/public-lists', async (req, res) => {
 // Fetch private lists for authenticated users
 router.get('/private-lists', authToken, async (req, res) => {
     try {
-        const privateLists = await List.find({ listOwner: req.user.id, isPublic: false })
-            .sort({ lastModified: -1 });
+        // Debug log to check the user object
+        console.log('User in /private-lists:', req.user);
+
+        // Ensure user ID exists in the token
+        if (!req.user?.id) {
+            return res.status(403).json({ message: 'Forbidden. Invalid user token.' });
+        }
+
+        const privateLists = await List.find({ listOwner: req.user.id, isPublic: false }).sort({ lastModified: -1 });
         res.status(200).json(privateLists);
     } catch (error) {
         console.error('Error fetching private lists:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 // Fetch user-specific lists
 router.get('/lists', authToken, async (req, res) => {

@@ -89,21 +89,23 @@ const AuthenticatedUser = ({ isAdmin }) => {
             if (!token) {
                 throw new Error('No token found. Please log in.');
             }
+    
             const response = await fetch('/api/auth/private-lists', {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
+    
             if (!response.ok) {
                 throw new Error('Failed to fetch private lists');
             }
+    
             const data = await response.json();
             setPrivateLists(data);
         } catch (error) {
             console.error('Error fetching private lists:', error);
         }
     };
-
     const handleCreateList = async (e) => {
         e.preventDefault();
         try {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const verifyToken = require('./verifyToken');
+const verifyToken = require('./verifyToken.js');
 const Users = require('../Schemas/user');
 
 // Fetch all users for the admin panel
