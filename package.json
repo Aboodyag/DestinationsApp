@@ -16,9 +16,11 @@
     "bootstrap": "^5.3.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "email-verification": "^0.4.6",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.2",
+    "nodemailer": "^6.9.16",
     "react-router-dom": "^7.1.1",
     "web-vitals": "^4.2.4"
   },

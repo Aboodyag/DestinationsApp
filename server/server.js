@@ -3,6 +3,8 @@ require('dotenv').config();
 const app = express()
 const {dbConnect, client} = require('./config/dbConnect')
 const cors = require('cors');
+const User = require('./Schemas/user'); 
+
 
 app.use(express.json());
 app.use(express.json({ limit: "50kb" }));
@@ -18,6 +20,7 @@ const authRoute = require('./Auth/authRoutes');
 app.use('/api/auth', authRoute);
 
 const adminRoute = require('./Auth/adminRoutes');
+const { default: mongoose } = require("mongoose");
 app.use('/api/admin', adminRoute);
 
 // const listRoute = require('./Auth/listRoutes'); 
