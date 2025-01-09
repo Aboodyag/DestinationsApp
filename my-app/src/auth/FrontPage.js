@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Login from './Login';
 import Register from './Register';
 import './FrontPage.css';
+import Footer from './Footer';
 
 const FrontPage = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -167,6 +168,7 @@ const FrontPage = () => {
                     </div>
                 ))}
             </div>
+            <Footer />
         </div>
     );
 };
@@ -202,6 +204,7 @@ const SearchForm = ({ onSearch }) => {
             />
             <button type="submit">Search</button>
         </form>
+        
     );
 };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './AuthenticatedUser.css';
+import Footer from './Footer';
 
 const AuthenticatedUser = ({ isAdmin }) => {
     const [userType, setUserType] = useState(isAdmin ? 'Admin' : 'User');
@@ -478,6 +479,7 @@ const toggleUserStatus = async () => {
                 <button type="submit">Create List</button>
             </form>
         </section>
+        <Footer />
         </div>
     );
 };
@@ -512,6 +514,7 @@ const SearchForm = ({ onSearch }) => {
             />
             <button type="submit">Search</button>
         </form>
+        
     );
 };
 
