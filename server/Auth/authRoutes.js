@@ -138,7 +138,7 @@ router.delete('/delete-list/:id', authToken, async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized to delete this list' });
         }
 
-        // Use Mongoose's findByIdAndDelete method to delete the list
+        // Delete the list
         await List.findByIdAndDelete(listId);
 
         console.log('List deleted successfully');
@@ -149,52 +149,62 @@ router.delete('/delete-list/:id', authToken, async (req, res) => {
     }
 });
 
-
-// Add a review to a public list
+//add review
 router.post('/add-review/:listId', authToken, async (req, res) => {
     try {
+        const { listId } = req.params;
         const { rating, comment } = req.body;
 
-        if (!rating || !comment) {
-            return res.status(400).json({ message: 'Rating and comment are required' });
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({ message: 'Invalid rating.' });
         }
 
-        const list = await List.findById(req.params.listId);
+        const list = await List.findById(listId);
         if (!list || !list.isPublic) {
-            return res.status(404).json({ message: 'Public list not found' });
+            return res.status(404).json({ message: 'List not found or is not public.' });
         }
 
-        const newReview = new Review({
-            listName: list.name,
+        const review = new Review({
+            listId: list._id,
+            userId: req.user.id, // Attach the user's ID from the token
             rating,
-            comment,
-            userName: req.user.name,
+            comment: comment || '' // Optional comment
         });
 
-        await newReview.save();
-        res.status(201).json({ message: 'Review added successfully', review: newReview });
+        await review.save();
+
+        // Recalculate the average rating
+        const reviews = await Review.find({ listId: list._id });
+        const avgRating =
+            reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+        list.avgRating = avgRating;
+        await list.save();
+
+        res.status(201).json({ message: 'Review added successfully.', review });
     } catch (error) {
-        console.error('Error adding review:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('Error adding review:', error.message);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 });
 
-// Fetch reviews for a list
+
+
+
+// Fetch all reviews for a specific public list
 router.get('/reviews/:listId', async (req, res) => {
     try {
-        const list = await List.findById(req.params.listId);
-        if (!list) {
-            return res.status(404).json({ message: 'List not found' });
-        }
+        const { listId } = req.params;
 
-        const reviews = await Review.find({ listName: list.name, isVisible: true })
-            .sort({ creationDate: -1 });
+        const reviews = await Review.find({ listId })
+            .populate('userId', 'name email')
+            .sort({ creationDate: -1 }); // Sort reviews by newest first
 
         res.status(200).json(reviews);
     } catch (error) {
         console.error('Error fetching reviews:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Failed to fetch reviews', error: error.message });
     }
 });
+
 
 module.exports = router;

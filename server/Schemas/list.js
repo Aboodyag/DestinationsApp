@@ -5,6 +5,10 @@ const listSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    avgRating: {
+        type: Number,
+        default: 0,
+    },
     destinations: [{
         destinationId: Number,
         destinationName: String, // For storing destination name
@@ -24,7 +28,8 @@ const listSchema = new mongoose.Schema({
         ref: 'Users',
         required: true
     }
-}, {
+    }, 
+    {
     timestamps: { updatedAt: 'lastModified' }
 });
 
