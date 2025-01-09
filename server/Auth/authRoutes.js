@@ -195,7 +195,7 @@ router.get('/reviews/:listId', async (req, res) => {
     try {
         const { listId } = req.params;
 
-        const reviews = await Review.find({ listId })
+        const reviews = await Review.find({ listId,isVisible: true })
             .populate('userId', 'name email')
             .sort({ creationDate: -1 }); // Sort reviews by newest first
 

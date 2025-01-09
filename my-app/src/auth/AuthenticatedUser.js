@@ -358,6 +358,7 @@ const AuthenticatedUser = ({ isAdmin }) => {
         }
     };
     
+    
 
     // const toggleUserStatus = async () => {
     //     try {

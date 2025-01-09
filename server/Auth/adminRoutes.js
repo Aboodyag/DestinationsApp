@@ -97,6 +97,28 @@ router.get('/reviews', verifyToken, async (req, res) => {
     }
 });
 
+router.patch('/review/:reviewId/toggle-hidden', verifyToken, async (req, res) => {
+    try {
+        const { reviewId } = req.params;
+
+        
+        const review = await Review.findById(reviewId);
+        if (!review) {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+
+       
+        review.isVisible = !review.isVisible;
+        await review.save();
+
+        res.status(200).json({ message: 'Review visibility toggled', isVisible: review.isVisible });
+    } catch (error) {
+        console.error('Error toggling review visibility:', error);
+        res.status(500).json({ message: 'Failed to toggle review visibility' });
+    }
+});
+
+
 
 
 module.exports = router;
