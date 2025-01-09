@@ -5,7 +5,12 @@ const listSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    destinations: [Number],
+    destinations: [{
+        destinationId: Number,
+        destinationName: String, // For storing destination name
+        latitude: Number,
+        longitude: Number
+    }], // Updated to handle detailed destination objects
     isPublic: {
         type: Boolean,
         default: false
@@ -20,7 +25,7 @@ const listSchema = new mongoose.Schema({
         required: true
     }
 }, {
-    timestamps: { updatedAt: 'lastModified' } 
+    timestamps: { updatedAt: 'lastModified' }
 });
 
 const List = mongoose.model('List', listSchema, "Lists");

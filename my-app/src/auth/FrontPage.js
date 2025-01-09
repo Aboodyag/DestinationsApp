@@ -149,15 +149,18 @@ const FrontPage = () => {
                         <p><strong>Destinations:</strong> {list.destinations.length}</p>
                         <p><strong>Description:</strong> {list.description || 'No description provided'}</p>
                         {expandedLists[list._id] && (
-                            <div>
-                                <h4>Destinations:</h4>
-                                <ul>
-                                    {list.destinations.map((destination, index) => (
-                                        <li key={index}>{destination}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
+    <div>
+        <h4>Destinations:</h4>
+        <ul>
+            {list.destinations.map((destination) => (
+                <li key={destination._id}> {/* Use _id from destination as a unique key */}
+                    <strong>{destination.destinationName}</strong> <br />
+                    Latitude: {destination.latitude}, Longitude: {destination.longitude}
+                </li>
+            ))}
+        </ul>
+    </div>
+)}
                         <button onClick={() => toggleListDetails(list._id)}>
                             {expandedLists[list._id] ? 'View Less' : 'View More'}
                         </button>

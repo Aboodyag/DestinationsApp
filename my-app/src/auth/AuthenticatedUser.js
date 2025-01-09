@@ -106,10 +106,28 @@ const AuthenticatedUser = ({ isAdmin }) => {
             console.error('Error fetching private lists:', error);
         }
     };
+
+    const handleAddDestination = () => {
+        setNewList((prevList) => ({
+            ...prevList,
+            destinations: [...prevList.destinations, { name: '', location: '', details: '' }],
+        }));
+    };
+
+    const handleDestinationChange = (index, field, value) => {
+        setNewList((prevList) => {
+            const updatedDestinations = [...prevList.destinations];
+            updatedDestinations[index][field] = value;
+            return { ...prevList, destinations: updatedDestinations };
+        });
+    };
+    
     const handleCreateList = async (e) => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
+            if (!token) throw new Error('User not logged in.');
+
             const response = await fetch('/api/auth/create-list', {
                 method: 'POST',
                 headers: {
@@ -118,15 +136,19 @@ const AuthenticatedUser = ({ isAdmin }) => {
                 },
                 body: JSON.stringify(newList),
             });
+
             if (!response.ok) {
                 throw new Error('Failed to create list');
             }
-            setNewList({ name: '', description: '', destinations: [], isPublic: false });
-            fetchPrivateLists(); // Refresh private lists
+
+            const data = await response.json();
+            alert('List created successfully!');
+            console.log('Created list:', data);
         } catch (error) {
             console.error('Error creating list:', error);
         }
     };
+    
 
     const fetchUsers = async () => {
         try {
@@ -311,9 +333,13 @@ const AuthenticatedUser = ({ isAdmin }) => {
                             <div>
                                 <h4>Destinations:</h4>
                                 <ul>
-                                    {list.destinations.map((destination, index) => (
-                                        <li key={index}>{destination}</li>
-                                    ))}
+                                {list.destinations.map((destination, index) => (
+    <li key={destination._id || index}>
+        <strong>Name:</strong> {destination.name || 'Unnamed'} <br />
+        <strong>Location:</strong> {destination.location || 'Unknown'} <br />
+        <strong>Details:</strong> {destination.details || 'No details provided'}
+    </li>
+))}
                                 </ul>
                             </div>
                         )}
@@ -339,9 +365,13 @@ const AuthenticatedUser = ({ isAdmin }) => {
                             <div>
                                 <h4>Destinations:</h4>
                                 <ul>
-                                    {list.destinations.map((destination, index) => (
-                                        <li key={index}>{destination}</li>
-                                    ))}
+                                {list.destinations.map((destination, index) => (
+    <li key={destination._id || index}>
+        <strong>Name:</strong> {destination.name || 'Unnamed'} <br />
+        <strong>Location:</strong> {destination.location || 'Unknown'} <br />
+        <strong>Details:</strong> {destination.details || 'No details provided'}
+    </li>
+))}
                                 </ul>
                             </div>
                         )}
@@ -351,31 +381,57 @@ const AuthenticatedUser = ({ isAdmin }) => {
 
             {/* Create List Section */}
             <section>
-                <h2>Create a New List</h2>
-                <form onSubmit={handleCreateList}>
+            <h2>Create a New List</h2>
+            <form onSubmit={handleCreateList}>
+                <input
+                    type="text"
+                    placeholder="List Name"
+                    value={newList.name}
+                    onChange={(e) => setNewList({ ...newList, name: e.target.value })}
+                    required
+                />
+                <textarea
+                    placeholder="Description"
+                    value={newList.description}
+                    onChange={(e) => setNewList({ ...newList, description: e.target.value })}
+                />
+                <label>
                     <input
-                        type="text"
-                        placeholder="List Name"
-                        value={newList.name}
-                        onChange={(e) => setNewList({ ...newList, name: e.target.value })}
-                        required
+                        type="checkbox"
+                        checked={newList.isPublic}
+                        onChange={(e) => setNewList({ ...newList, isPublic: e.target.checked })}
                     />
-                    <textarea
-                        placeholder="Description"
-                        value={newList.description}
-                        onChange={(e) => setNewList({ ...newList, description: e.target.value })}
-                    />
-                    <label>
+                    Public
+                </label>
+                <h3>Destinations</h3>
+                {newList.destinations.map((destination, index) => (
+                    <div key={index}>
                         <input
-                            type="checkbox"
-                            checked={newList.isPublic}
-                            onChange={(e) => setNewList({ ...newList, isPublic: e.target.checked })}
+                            type="text"
+                            placeholder="Destination Name"
+                            value={destination.name}
+                            onChange={(e) => handleDestinationChange(index, 'name', e.target.value)}
+                            required
                         />
-                        Public
-                    </label>
-                    <button type="submit">Create List</button>
-                </form>
-            </section>
+                        <input
+                            type="text"
+                            placeholder="Location"
+                            value={destination.location}
+                            onChange={(e) => handleDestinationChange(index, 'location', e.target.value)}
+                        />
+                        <textarea
+                            placeholder="Details"
+                            value={destination.details}
+                            onChange={(e) => handleDestinationChange(index, 'details', e.target.value)}
+                        />
+                    </div>
+                ))}
+                <button type="button" onClick={handleAddDestination}>
+                    Add Destination
+                </button>
+                <button type="submit">Create List</button>
+            </form>
+        </section>
         </div>
     );
 };

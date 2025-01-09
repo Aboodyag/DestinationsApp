@@ -63,18 +63,21 @@ router.get('/lists', authToken, async (req, res) => {
 router.post('/create-list', authToken, async (req, res) => {
     try {
         const { name, description, destinations, isPublic } = req.body;
-        if (!name || !destinations || destinations.length === 0) {
-            return res.status(400).json({ message: 'List name and destinations are required' });
+
+        if (!name || !destinations || !Array.isArray(destinations) || destinations.length === 0) {
+            return res.status(400).json({ message: 'List name and at least one destination are required' });
         }
+
         const newList = new List({
             name,
             description,
-            destinations,
+            destinations, // Add destinations here
             isPublic,
             listOwner: req.user.id,
         });
+
         await newList.save();
-        res.status(201).json({ message: 'List created successfully' });
+        res.status(201).json({ message: 'List created successfully', list: newList });
     } catch (error) {
         console.error('Error creating list:', error);
         res.status(500).json({ message: 'Internal server error' });
