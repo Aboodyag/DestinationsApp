@@ -174,17 +174,32 @@ const AuthenticatedUser = ({ isAdmin }) => {
 
     const grantManager = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("No token found. Please log in.");
+            }
+    
+            if (!selectedUser) {
+                alert("Please select a user.");
+                return;
+            }
+    
             const response = await fetch(`/api/admin/grant-manager/${selectedUser}`, {
-                method: 'PATCH',
+                method: "PATCH",
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
+    
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+    
             const data = await response.json();
-            setAdminMessage(data.message || 'Operation successful');
+            setAdminMessage(data.message || "User granted admin privileges successfully.");
         } catch (error) {
-            setAdminMessage('Failed to grant manager privileges.');
+            console.error("Error granting admin privileges:", error);
+            setAdminMessage("Error granting admin privileges: " + error.message);
         }
     };
 
@@ -204,21 +219,52 @@ const AuthenticatedUser = ({ isAdmin }) => {
         }
     };
 
-    const toggleUserStatus = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`/api/admin/user/${selectedUser}/toggle-disabled`, {
-                method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            const data = await response.json();
-            setAdminMessage(data.message || 'Operation successful');
-        } catch (error) {
-            setAdminMessage('Failed to toggle user status.');
+    // const toggleUserStatus = async () => {
+    //     try {
+    //         const token = localStorage.getItem('token');
+    //         const response = await fetch(`/api/admin/user/${selectedUser}/toggle-disabled`, {
+    //             method: 'PATCH',
+    //             headers: {
+    //                 Authorization: `Bearer ${token}`,
+    //             },
+    //         });
+    //         const data = await response.json();
+    //         setAdminMessage(data.message || 'Operation successful');
+    //     } catch (error) {
+    //         setAdminMessage('Failed to toggle user status.');
+    //     }
+    // };
+
+    // Function to toggle user status
+const toggleUserStatus = async () => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No token found. Please log in.');
         }
-    };
+
+        if (!selectedUser) {
+            throw new Error('No user selected.');
+        }
+
+        const response = await fetch(`/api/admin/toggle-user-status/${selectedUser}`, {
+            method: 'PATCH',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to toggle user status: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setAdminMessage(data.message || 'Operation successful');
+    } catch (error) {
+        console.error('Error toggling user status:', error);
+        setAdminMessage(error.message);
+    }
+};
 
     useEffect(() => {
         if (isAdmin) fetchUsers();
@@ -268,20 +314,20 @@ const AuthenticatedUser = ({ isAdmin }) => {
                     </div>
 
                     <div>
-                        <h3>Toggle User Status</h3>
-                        <select
-                            value={selectedUser}
-                            onChange={(e) => setSelectedUser(e.target.value)}
-                        >
-                            <option value="">Select User</option>
-                            {users.map((user) => (
-                                <option key={user._id} value={user._id}>
-                                    {user.name || user.email}
-                                </option>
-                            ))}
-                        </select>
-                        <button onClick={toggleUserStatus}>Toggle Status</button>
-                    </div>
+    <h3>Toggle User Status</h3>
+    <select
+        value={selectedUser}
+        onChange={(e) => setSelectedUser(e.target.value)}
+    >
+        <option value="">Select User</option>
+        {users.map((user) => (
+            <option key={user._id} value={user._id}>
+                {user.name || user.email}
+            </option>
+        ))}
+    </select>
+    <button onClick={toggleUserStatus}>Toggle Status</button>
+</div>
                     {adminMessage && <p>{adminMessage}</p>}
                 </section>
             )}
