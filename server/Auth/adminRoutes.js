@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('./verifyToken.js');
 const Users = require('../Schemas/user');
+const Review = require('../Schemas/review'); 
+
 
 // Fetch all users for the admin panel
 router.get('/users', verifyToken, async (req, res) => {
@@ -84,5 +86,17 @@ router.patch('/toggle-user-status/:id', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Failed to update user status.', error: error.message });
     }
 });
+
+router.get('/reviews', verifyToken, async (req, res) => {
+    try {
+        const reviews = await Review.find().populate('userId', 'name email'); // Populate user data
+        res.status(200).json(reviews);
+    } catch (error) {
+        console.error('Error fetching reviews:', error);
+        res.status(500).json({ message: 'Failed to fetch reviews' });
+    }
+});
+
+
 
 module.exports = router;

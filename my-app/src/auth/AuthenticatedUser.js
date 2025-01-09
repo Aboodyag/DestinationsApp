@@ -22,6 +22,9 @@ const AuthenticatedUser = ({ isAdmin }) => {
     const [editList, setEditList] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); // To track if the modal is open
 
+    const [reviews, setReviews] = useState([]); // To store all reviews
+
+
 
     const fetchReviews = async (listId) => {
         try {
@@ -308,21 +311,53 @@ const AuthenticatedUser = ({ isAdmin }) => {
         }
     };
 
+    const fetchAllReviews = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('User not logged in.');
+    
+            const response = await fetch('/api/admin/reviews', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+    
+            if (!response.ok) throw new Error('Failed to fetch reviews');
+    
+            const data = await response.json();
+            setReviews(data); // Save reviews in the state
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        }
+    };
+    
+    
+    
+
     const toggleReviewVisibility = async () => {
         try {
             const token = localStorage.getItem('token');
+            if (!token) throw new Error('User not logged in.');
+    
+            if (!reviewId) {
+                alert('Please select a review.');
+                return;
+            }
+    
             const response = await fetch(`/api/admin/review/${reviewId}/toggle-hidden`, {
                 method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
             });
+    
+            if (!response.ok) throw new Error('Failed to toggle review visibility');
+    
             const data = await response.json();
-            setAdminMessage(data.message || 'Operation successful');
+            alert(`Review visibility updated: ${data.isVisible ? 'Visible' : 'Hidden'}`);
+            fetchAllReviews(); // Refresh the list after toggling
         } catch (error) {
-            setAdminMessage('Failed to toggle review visibility.');
+            console.error('Error toggling review visibility:', error);
+            alert('Failed to toggle review visibility.');
         }
     };
+    
 
     // const toggleUserStatus = async () => {
     //     try {
@@ -372,7 +407,10 @@ const AuthenticatedUser = ({ isAdmin }) => {
     };
 
     useEffect(() => {
-        if (isAdmin) fetchUsers();
+        if (isAdmin) {
+            fetchUsers();
+            fetchAllReviews();
+        }
     }, [isAdmin]);
 
 
@@ -408,15 +446,23 @@ const AuthenticatedUser = ({ isAdmin }) => {
                     </div>
 
                     <div>
-                        <h3>Toggle Review Visibility</h3>
-                        <input
-                            type="text"
-                            placeholder="Review ID"
-                            value={reviewId}
-                            onChange={(e) => setReviewId(e.target.value)}
-                        />
-                        <button onClick={toggleReviewVisibility}>Toggle Visibility</button>
-                    </div>
+                    <div>
+    <h3>Toggle Review Visibility</h3>
+    <select
+        value={reviewId}
+        onChange={(e) => setReviewId(e.target.value)}
+    >
+        <option value="">Select a Review</option>
+        {reviews.map((review) => (
+            <option key={review._id} value={review._id}>
+                {`${review.userId?.name || 'Unknown User'}: ${review.comment || 'No Comment'}`}
+            </option>
+        ))}
+    </select>
+    <button onClick={toggleReviewVisibility}>Toggle Visibility</button>
+</div>
+</div>
+
 
                     <div>
                         <h3>Toggle User Status</h3>
