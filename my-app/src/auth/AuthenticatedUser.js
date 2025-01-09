@@ -18,44 +18,47 @@ const AuthenticatedUser = ({ isAdmin }) => {
     const [reviewId, setReviewId] = useState(''); // ** Manage reviews in admin panel
     const [editList, setEditList] = useState(null);
 
-const handleEditList = async (list) => {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            throw new Error('User not logged in.');
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false); // To track if the modal is open
+
+    const handleOpenEditModal = (list) => {
+        setEditList(list); // Set the selected list
+        setIsEditModalOpen(true); // Open the modal
+    };
+    const handleEditList = async (updatedList) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/auth/edit-list/${updatedList._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(updatedList),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to edit list');
+            }
+    
+            const data = await response.json();
+    
+            // Update state
+            setPrivateLists((prevLists) =>
+                prevLists.map((list) =>
+                    list._id === updatedList._id ? data.list : list
+                )
+            );
+    
+            setIsEditModalOpen(false); // Close the modal
+            setEditList(null);
+    
+            alert('List updated successfully!');
+        } catch (error) {
+            console.error('Error editing list:', error);
+            alert('Failed to edit list.');
         }
+    };
 
-        const response = await fetch(`/api/auth/edit-list/${list._id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-                name: list.name,
-                description: list.description,
-                destinations: list.destinations,
-                isPublic: list.isPublic,
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to update list');
-        }
-
-        const updatedList = await response.json();
-        setPrivateLists((prevLists) =>
-            prevLists.map((item) =>
-                item._id === updatedList.list._id ? updatedList.list : item
-            )
-        );
-        setEditList(null); // Close the modal
-        alert('List updated successfully');
-    } catch (error) {
-        console.error('Error updating list:', error);
-        alert('Failed to update list');
-    }
-};
 
 const handleDeleteList = async (listId) => {
     try {
@@ -486,12 +489,22 @@ const toggleUserStatus = async () => {
                         </li>
                     ))}
                 </ul>
-                <button onClick={() => setEditList(list)}>Edit List</button>
+                <button onClick={() => handleOpenEditModal(list)}>Edit List</button>
                 <button onClick={() => handleDeleteList(list._id)}>Delete List</button>
             </div>
         )}
     </div>
 ))}
+
+{/* Add Edit Modal */}
+{isEditModalOpen && editList && (
+    <EditListModal
+        list={editList}
+        onSave={handleEditList}
+        onClose={() => setIsEditModalOpen(false)}
+    />
+)}
+
 
             </div>
 
@@ -586,5 +599,94 @@ const SearchForm = ({ onSearch }) => {
         
     );
 };
+
+const EditListModal = ({ list, onSave, onClose }) => {
+    const [name, setName] = useState(list.name || '');
+    const [description, setDescription] = useState(list.description || '');
+    const [destinations, setDestinations] = useState(list.destinations || []);
+    const [isPublic, setIsPublic] = useState(list.isPublic || false);
+
+    const handleDestinationChange = (index, field, value) => {
+        const updatedDestinations = [...destinations];
+        updatedDestinations[index][field] = value;
+        setDestinations(updatedDestinations);
+    };
+
+    const handleSave = () => {
+        const updatedList = {
+            ...list,
+            name,
+            description,
+            destinations,
+            isPublic,
+        };
+        onSave(updatedList);
+    };
+
+    return (
+        <div className="edit-modal">
+            <h3>Edit List</h3>
+            <label>
+                Name:
+                <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
+            </label>
+            <label>
+                Description:
+                <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                />
+            </label>
+            <label>
+                Destinations:
+                <ul>
+                    {destinations.map((destination, index) => (
+                        <li key={index}>
+                            <input
+                                type="text"
+                                placeholder="Name"
+                                value={destination.name || ''}
+                                onChange={(e) =>
+                                    handleDestinationChange(index, 'name', e.target.value)
+                                }
+                            />
+                            <input
+                                type="text"
+                                placeholder="Location"
+                                value={destination.location || ''}
+                                onChange={(e) =>
+                                    handleDestinationChange(index, 'location', e.target.value)
+                                }
+                            />
+                            <input
+                                type="text"
+                                placeholder="Details"
+                                value={destination.details || ''}
+                                onChange={(e) =>
+                                    handleDestinationChange(index, 'details', e.target.value)
+                                }
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </label>
+            <label>
+                Public:
+                <input
+                    type="checkbox"
+                    checked={isPublic}
+                    onChange={(e) => setIsPublic(e.target.checked)}
+                />
+            </label>
+            <button onClick={handleSave}>Save</button>
+            <button onClick={onClose}>Cancel</button>
+        </div>
+    );
+};
+
 
 export default AuthenticatedUser;
