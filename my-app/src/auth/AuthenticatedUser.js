@@ -16,6 +16,72 @@ const AuthenticatedUser = ({ isAdmin }) => {
     const [users, setUsers] = useState([]); // ** List of users for dropdown
     const [selectedUser, setSelectedUser] = useState(''); // ** Selected user from dropdown
     const [reviewId, setReviewId] = useState(''); // ** Manage reviews in admin panel
+    const [editList, setEditList] = useState(null);
+
+const handleEditList = async (list) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('User not logged in.');
+        }
+
+        const response = await fetch(`/api/auth/edit-list/${list._id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                name: list.name,
+                description: list.description,
+                destinations: list.destinations,
+                isPublic: list.isPublic,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update list');
+        }
+
+        const updatedList = await response.json();
+        setPrivateLists((prevLists) =>
+            prevLists.map((item) =>
+                item._id === updatedList.list._id ? updatedList.list : item
+            )
+        );
+        setEditList(null); // Close the modal
+        alert('List updated successfully');
+    } catch (error) {
+        console.error('Error updating list:', error);
+        alert('Failed to update list');
+    }
+};
+
+const handleDeleteList = async (listId) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('User not logged in.');
+        }
+
+        const response = await fetch(`/api/auth/delete-list/${listId}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete list');
+        }
+
+        setPrivateLists((prevLists) => prevLists.filter((list) => list._id !== listId));
+        alert('List deleted successfully');
+    } catch (error) {
+        console.error('Error deleting list:', error);
+        alert('Failed to delete list');
+    }
+};
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -400,30 +466,33 @@ const toggleUserStatus = async () => {
             {/* Private Lists Section */}
             <h2>Your Private Lists</h2>
             <div className="private-lists">
-                {privateLists.map((list) => (
-                    <div className="private-list-card" key={list._id}>
-                        <h3>{list.name}</h3>
-                        <p><strong>Description:</strong> {list.description || 'No description provided'}</p>
-                        <p><strong>Last Modified:</strong> {new Date(list.lastModified).toLocaleString()}</p>
-                        <button onClick={() => toggleListDetails(list._id)}>
-                            {expandedLists[list._id] ? 'View Less' : 'View More'}
-                        </button>
-                        {expandedLists[list._id] && (
-                            <div>
-                                <h4>Destinations:</h4>
-                                <ul>
-                                {list.destinations.map((destination, index) => (
-    <li key={destination._id || index}>
-        <strong>Name:</strong> {destination.name || 'Unnamed'} <br />
-        <strong>Location:</strong> {destination.location || 'Unknown'} <br />
-        <strong>Details:</strong> {destination.details || 'No details provided'}
-    </li>
+            {privateLists.map((list) => (
+    <div className="private-list-card" key={list._id}>
+        <h3>{list.name}</h3>
+        <p><strong>Description:</strong> {list.description || 'No description provided'}</p>
+        <p><strong>Last Modified:</strong> {new Date(list.lastModified).toLocaleString()}</p>
+        <button onClick={() => toggleListDetails(list._id)}>
+            {expandedLists[list._id] ? 'View Less' : 'View More'}
+        </button>
+        {expandedLists[list._id] && (
+            <div>
+                <h4>Destinations:</h4>
+                <ul>
+                    {list.destinations.map((destination, index) => (
+                        <li key={destination._id || index}>
+                            <strong>Name:</strong> {destination.name || 'Unnamed'} <br />
+                            <strong>Location:</strong> {destination.location || 'Unknown'} <br />
+                            <strong>Details:</strong> {destination.details || 'No details provided'}
+                        </li>
+                    ))}
+                </ul>
+                <button onClick={() => setEditList(list)}>Edit List</button>
+                <button onClick={() => handleDeleteList(list._id)}>Delete List</button>
+            </div>
+        )}
+    </div>
 ))}
-                                </ul>
-                            </div>
-                        )}
-                    </div>
-                ))}
+
             </div>
 
             {/* Create List Section */}

@@ -85,44 +85,70 @@ router.post('/create-list', authToken, async (req, res) => {
 });
 
 // Edit an existing list
+// Update an existing list
 router.put('/edit-list/:id', authToken, async (req, res) => {
     try {
+        const { id } = req.params; // Get the list ID from the URL
         const { name, description, destinations, isPublic } = req.body;
-        const list = await List.findById(req.params.id);
 
-        if (!list || list.listOwner.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Unauthorized to edit this list' });
+        // Find the list by ID and ensure the logged-in user owns it
+        const list = await List.findOne({ _id: id, listOwner: req.user.id });
+        if (!list) {
+            return res.status(404).json({ message: 'List not found or unauthorized' });
         }
 
-        list.name = name || list.name;
-        list.description = description || list.description;
-        list.destinations = destinations || list.destinations;
-        list.isPublic = typeof isPublic !== 'undefined' ? isPublic : list.isPublic;
+        // Update fields
+        if (name) list.name = name;
+        if (description) list.description = description;
+        if (destinations) list.destinations = destinations;
+        if (typeof isPublic !== 'undefined') list.isPublic = isPublic;
+
+        // Update the last modified time
+        list.lastModified = new Date();
 
         await list.save();
         res.status(200).json({ message: 'List updated successfully', list });
     } catch (error) {
-        console.error('Error editing list:', error);
+        console.error('Error updating list:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// Delete a list
+// Delete an existing list
 router.delete('/delete-list/:id', authToken, async (req, res) => {
     try {
-        const list = await List.findById(req.params.id);
+        const listId = req.params.id;
 
-        if (!list || list.listOwner.toString() !== req.user.id) {
+        // Log to debug
+        console.log('Attempting to delete list with ID:', listId);
+        console.log('Authenticated user ID:', req.user.id);
+
+        // Find the list by ID
+        const list = await List.findById(listId);
+
+        // Ensure the list exists
+        if (!list) {
+            console.error('List not found');
+            return res.status(404).json({ message: 'List not found' });
+        }
+
+        // Ensure the authenticated user is the owner of the list
+        if (list.listOwner.toString() !== req.user.id) {
+            console.error('Unauthorized: List does not belong to the user');
             return res.status(403).json({ message: 'Unauthorized to delete this list' });
         }
 
-        await List.findByIdAndDelete(req.params.id);
+        // Use Mongoose's findByIdAndDelete method to delete the list
+        await List.findByIdAndDelete(listId);
+
+        console.log('List deleted successfully');
         res.status(200).json({ message: 'List deleted successfully' });
     } catch (error) {
         console.error('Error deleting list:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 // Add a review to a public list
 router.post('/add-review/:listId', authToken, async (req, res) => {
