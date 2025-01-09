@@ -473,13 +473,13 @@ const AuthenticatedUser = ({ isAdmin }) => {
 
             {/* Public Lists Section */}
             <h2>Public Lists</h2>
-<div className="public-lists">
+            <div className="public-lists">
     {publicLists.map((list) => (
         <div className="public-list-card" key={list._id}>
             <h3>{list.name}</h3>
             <p><strong>Created by:</strong> {list.listOwner?.name || 'Unknown'}</p>
-            <p><strong>Destinations:</strong> {list.destinations.length}</p>
             <p><strong>Description:</strong> {list.description || 'No description provided'}</p>
+            <p><strong>Average Rating:</strong> {list.avgRating ? list.avgRating.toFixed(1) : 'Not rated yet'}</p>
             {expandedLists[list._id] && (
                 <div>
                     <h4>Destinations:</h4>
@@ -494,21 +494,17 @@ const AuthenticatedUser = ({ isAdmin }) => {
                     </ul>
                     <h4>Reviews:</h4>
                     {list.reviews && list.reviews.length > 0 ? (
-        list.reviews.map((review) => (
-            <div key={review._id}>
-                <p><strong>User:</strong> {review.userId?.name || 'Unknown'}</p>
-                <p><strong>Rating:</strong> {review.rating}</p>
-                <p><strong>Comment:</strong> {review.comment || 'No comment'}</p>
-            </div>
-        ))
-    ) : (
-        <p>No reviews yet.</p>
-    )}
-                    {/* Pass the onAddReview handler */}
-                    <ReviewForm 
-                        listId={list._id} 
-                        onAddReview={handleAddReview} 
-                    />
+                        list.reviews.map((review) => (
+                            <div key={review._id}>
+                                <p><strong>User:</strong> {review.userId?.name || 'Unknown'}</p>
+                                <p><strong>Rating:</strong> {review.rating}</p>
+                                <p><strong>Comment:</strong> {review.comment || 'No comment'}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No reviews yet.</p>
+                    )}
+                    <ReviewForm listId={list._id} onAddReview={handleAddReview} />
                 </div>
             )}
             <button onClick={() => toggleListDetails(list._id)}>
@@ -516,10 +512,8 @@ const AuthenticatedUser = ({ isAdmin }) => {
             </button>
         </div>
     ))}
+</div>
 
-
-
-            </div>
 
             {/* Private Lists Section */}
             <h2>Your Private Lists</h2>
